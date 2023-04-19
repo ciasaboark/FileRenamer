@@ -27,18 +27,19 @@
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
-    "@types/node": "^18.15.11",
+    "@kenjiuno/msgreader": "^1.19.0-alpha.1",
     "@shoelace-style/shoelace": "^2.0.0-beta.83",
+    "@types/node": "^18.15.11",
+    "csv": "^6.2.7",
     "electron-localshortcut": "^3.2.1",
     "electron-log": "^4.4.6",
     "electron-settings": "^4.0.2",
     "electron-updater": "^4.6.5",
+    "lit": "^2.6.1",
     "mkdirp": "^1.0.4",
     "moment": "^2.29.4",
     "nodejs-tail": "^1.1.1",
-    "xlsx": "^0.18.5",
-    "csv": "^6.2.7",
-    "lit": "^2.6.1",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "xlsx": "^0.18.5"
   }
 }

@@ -107,3 +107,6 @@ electron-builder.json
 #Packaged version
 dist/
 release-builds/
+
+#Webpack output folder
+bundle/

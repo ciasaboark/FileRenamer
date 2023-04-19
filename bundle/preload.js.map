@@ -1,1 +1,0 @@
-{"version":3,"file":"preload.js","mappings":";;;;;AAAA,OAAO,CAAC,GAAG,CAAC,UAAU,CAAC","sources":["webpack://file_renamer/./src/preload.ts"],"sourcesContent":["console.log('Preload!')"],"names":[],"sourceRoot":""}
