@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src 'self';font-src 'self'; img-src 'self' data: https:; style-src 'self' ; script-src 'self'; object-src data: 'unsafe-eval'; unsafe-inline"> -->
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0-beta.72/dist/themes/light.css" />
+    <script type="module" src="../node_modules/@shoelace-style/shoelace/dist/shoelace.js"></script>
+    <link href="./index.css" rel="stylesheet">
+    <script src="elements/pending-import.js"></script>
+    <script src="elements/app-settings.js"></script>
+    <script src="elements/log-viewer.js"></script>
+    <script src="elements/import-list.js"></script>
+    <title>File Renamer</title>
+  </head>
+  <body class="sl-dark">
+    <header>
+      <div class="title">File Renamer</div>
+      <div class="buttons">
+        <div id="closeButton">
+          <sl-icon name="x-lg"></sl-icon>
+        </div>
+        
+    </div>
+    </header>
+    
+    <main-app></main-app>
+
+
+    <!-- You can also require other files to run in this process -->
+    <script src="../bundle/index.js"></script>
+  </body>
+</html>

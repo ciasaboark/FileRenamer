@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+      "target": "ES2021",
+      "module": "CommonJS",
+      "lib": [
+        "ESNext",
+        "dom"
+      ],
+      "moduleResolution": "node",
+      "noImplicitAny": false,
+      "sourceMap": true,
+      "outDir": "build",
+      "baseUrl": ".",
+      "experimentalDecorators": true,
+      "noImplicitOverride": true,
+      // "noUnusedLocals": true,
+      "paths": {
+        "*": [
+          "node_modules/*"
+        ]
+      },
+      "skipLibCheck": true
+    },
+    "include": [
+      "src/**/*",
+    ],
+    "exclude": [
+      "node_modules/**/*"
+    ]
+  }

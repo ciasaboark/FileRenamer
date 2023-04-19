@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <script type="module" src="../node_modules/@shoelace-style/shoelace/dist/shoelace/shoelace.esm.js"></script>
+        <link rel="stylesheet" type="text/css" href="../node_modules/animate.css/animate.css">
+        <link rel="stylesheet" href="../node_modules/@shoelace-style/shoelace/dist/shoelace/shoelace.css">
+        <link rel="stylesheet" type="text/css" href="main_theme.css">
+        <link id="themeStyle" rel="stylesheet" type="text/css" href="">
+        <link rel="stylesheet" type="text/css" href="about.css">
+        <link rel="stylesheet" href="../node_modules/xel/themes/material.css">
+        
+    </head>
+    <body>
+        <header>
+            <img src="../icons/icon.svg">
+            <div class="text">
+                <h1 class="animate__animated animate__fadeInUp">Production Display</h1>
+                <div class="version animate__animated animate__fadeInUp">
+                    Version:<span id="versionNo">...</span>
+                </div>
+                <div class="version animate__animated animate__fadeInUp">
+                    Build date:<span id="buildTimestamp">...</span>
+                </div>
+            </div>
+            <!-- <div class="overlay"></div> -->
+        </header>
+        <div id="contentWrapper">
+            <p>A data visualizer for EXE production data.</p>
+            <p>Created by <a href="mailto:jonathan.nelson@spartannash.com?subject=Production%20Display&body=Having trouble?  Make sure to include the workstation number.  The workstation number is printed on a label on the top of the PC with the format DT-XXXXXXX">Jonathan Nelson</a> and made possible by viewers like you.</p>
+            <p>Need help?
+                <sl-button id="manualButton" size="small">
+                    <sl-icon slot="prefix" name="file-text"></sl-icon>
+                    View the manual
+                </sl-button>
+            
+            </p>
+            <div id="content"  class="animate__animated animate__fadeIn">
+                
+            </div>
+
+        </div>
+        <script src="about.js"></script>
+    </body>
+</html>

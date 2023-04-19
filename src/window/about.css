@@ -1,0 +1,173 @@
+body {
+    background-color: white;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    font-weight: 500;
+    background-color: #353535;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+    padding: 16px;
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
+    z-index: 3;
+    display: flex;
+    flex-direction: row;
+    text-align: left;
+}
+
+header .text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin-left: 16px;
+}
+
+a {
+    color: var(--accent) !important;
+}
+
+@keyframes shift {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+}
+
+header video {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 100%;
+    object-fit: cover;
+    max-width: 100%;
+    min-width: 100%;
+    min-height: 100%;
+    object-position: top;
+}
+
+header img {
+    width: 96px;
+    height: 96px;
+    top: 0;
+    bottom: 0;
+    left: 16;
+    margin: auto;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgb(0 0 0 / 56%);
+}
+
+header .overlay {
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    width: 100%;
+    height: 32px;
+    margin-top: 16px;
+}
+
+header h1 {
+    width: 100%;
+    font-size: 24pt;
+    font-weight: bold;
+    padding: 0;
+    margin: 0 0 8px 0;
+    font-family: sans-serif;
+    line-height: 1em;
+}
+
+header h2 {
+    width: 100%;
+    font-size: 12pt;
+    font-weight: bold;
+    padding: 0;
+    margin: 0 0 8px 0;
+    font-family: sans-serif;
+    color: white;
+    animation-delay: 200ms;
+
+}
+
+.version {
+    font-family: sans-serif;
+    font-size: 8pt;
+    animation-delay: 300ms;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#versionNo {
+    margin-left: .3em;
+    margin-right: 1em;
+}
+
+#buildTimestamp {
+    margin-left: .3em;
+}
+
+#contentWrapper {
+    overflow: scroll;
+    flex: 1;
+    padding: 16px;
+    font-size: 10pt;
+    font-weight: normal;
+    background-color: white;
+    color: black;
+}
+
+#content {
+    animation-delay: 700ms;
+}
+
+#content h1, #content h2 {
+    padding: 0;
+    margin: 0 0 16px 0;
+    color: black;
+}
+
+a {
+    color: var(--spinner-color);
+}
+
+#content h1 {
+    font-size: 18pt;
+}
+
+#content h2 {
+    font-size: 14pt;
+}
+
+
+
+::-webkit-scrollbar {
+    width: 10px;
+    min-width: 10px;
+    background: rgba(0, 0, 0, 0);
+}
+  
+/* Track */
+::-webkit-scrollbar-track {
+    width: 10px;
+    min-width: 10px;
+    background: rgba(0, 0, 0, 0);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb-inactive);
+    width: 10x;
+    min-width: 10px;
+    max-width: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    width: 10px;
+    min-width: 10px;
+    max-width: 10px;
+    background: var(--scroll-thumb-active);
+}
