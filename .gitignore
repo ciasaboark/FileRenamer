@@ -98,9 +98,6 @@ public/
 #IntelliJ
 .idea/
 
-#VS Code
-.vscode/
-
 # End of https://www.gitignore.io/api/node
 
 #Contains git access token
