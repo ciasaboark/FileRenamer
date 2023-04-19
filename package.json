@@ -1,0 +1,44 @@
+{
+  "name": "file_renamer",
+  "productName": "File Renamer",
+  "version": "1.0.7",
+  "description": "Rename files based on the create date time",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "electron-builder build  --win --x64 --config electron-builder.json --publish never",
+    "deploy": "electron-builder build --win --x64 --config electron-builder.json --publish always",
+    "postinstall": "electron-builder install-app-deps",
+    "rebuild": "npm rebuild --runtime=electron --target=7.1.8 --disturl=https://atom.io/download/atom-shell --abi=75"
+  },
+  "author": "Jonathan Nelson",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@electron/rebuild": "^3.2.10",
+    "@types/node": "^18.15.11",
+    "clean-terminal-webpack-plugin": "^3.0.0",
+    "electron": "^23.1.1",
+    "electron-builder": "^23.6.0",
+    "electron-packager": "^16.0.0",
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.9.5",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  },
+  "dependencies": {
+    "@types/node": "^18.15.11",
+    "@shoelace-style/shoelace": "^2.0.0-beta.83",
+    "electron-localshortcut": "^3.2.1",
+    "electron-log": "^4.4.6",
+    "electron-settings": "^4.0.2",
+    "electron-updater": "^4.6.5",
+    "mkdirp": "^1.0.4",
+    "moment": "^2.29.4",
+    "nodejs-tail": "^1.1.1",
+    "xlsx": "^0.18.5",
+    "csv": "^6.2.7",
+    "lit": "^2.6.1",
+    "uuid": "^9.0.0"
+  }
+}
