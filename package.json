@@ -3,7 +3,7 @@
   "productName": "File Renamer",
   "version": "1.0.7",
   "description": "Rename files based on the create date time",
-  "main": "main.js",
+  "main": "bundle/main.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
