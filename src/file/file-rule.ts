@@ -1,7 +1,12 @@
+import { UUID } from "crypto"
+
 /**
  * Describes the rules for renaming a file that matches a given pattern
  */
 export interface FileRule {
+    /** A unique ID for the rule */
+    id: UUID,
+
     /** A description of the rule */
     description: string,
 
@@ -10,7 +15,7 @@ export interface FileRule {
      * Equals: match any filename that exactly matches the matchStr.
      * Regex: match based on javascript regex test()
     */
-    matchType: 'contains' | 'equals' | 'regex',
+    matchType: 'contains' | 'equals' | 'regex' | 'all',
     
     /** The string to match the filename against */
     matchStr: string,

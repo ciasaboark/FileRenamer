@@ -1,7 +1,7 @@
-import { app, contextBridge, ipcRenderer, Size } from "electron";
-import log = require('electron-log');
-import fs = require('fs');
+import { contextBridge, ipcRenderer } from "electron";
+import { FileRenameRequest } from "./file/rename-request";
 import { SettingsArbitrator } from "./settings/settings-arbitrator";
+import log = require('electron-log');
 const sa = SettingsArbitrator.getInstance();
 
 console.log('Preload!')
@@ -13,15 +13,13 @@ contextBridge.exposeInMainWorld('log', {
     error: (msg: string) => log.error(msg)
 });
 
-contextBridge.exposeInMainWorld('file', {
-    async rename(oldPath: string, newPath: string): Promise<void> {
-        await fs.promises.rename(oldPath, newPath);
-        return;
+contextBridge.exposeInMainWorld('files', {
+    addFileRequest(filename: string) {
+        ipcRenderer.invoke('api-file--process-file', filename);
     },
-
-    async copy(oldPath: string, newPath: string): Promise<void> {
-        await fs.promises.copyFile(oldPath, newPath);
-        return;
+    getRequests(): Promise<FileRenameRequest[]> {
+        let requests = ipcRenderer.invoke('api-file--current-status');
+        return requests;
     }
 });
 
@@ -78,3 +76,14 @@ contextBridge.exposeInMainWorld('dialog', {
     }
 });
 
+contextBridge.exposeInMainWorld('api', {
+    async receive(channel: string, func: Function) {
+        ipcRenderer.on(channel, (event, ...args) => {
+            try {
+                func.apply(null, args);
+            } catch (err) {
+                log.error(`Uncaught error in caller return function: ${err}`)
+            }
+        })
+    }
+});

@@ -1,6 +1,11 @@
-import { LitElement, html, css, PropertyValueMap } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js'
-import { LogViewer } from "./log-viewer";
+import { LitElement, PropertyValueMap, css, html } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { FileRenameRequest } from '../file/rename-request';
+import './app-settings';
+import { API, Files, Log } from './context-bridge-interface';
+import './request-list';
+declare const files: Files, api: API, log: Log;
+
 
 @customElement('main-app')
 export class MainApp extends LitElement {
@@ -8,63 +13,233 @@ export class MainApp extends LitElement {
         css`
             :host {
                 display: block;
+                width: 100vw;
+                height: 100vh;
             }
 
-            .hid {
+            *[hidden] {
+                display: none !important;
+            }
+
+           
+            #dropTarget {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: -webkit-fill-available;
+                padding: 16px;
+            }
+
+            #dropTarget * {
                 pointer-events: none;
+            }
+
+            .active {
+                background-color: var(--accent-color);
+            }
+
+            #update {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                font-size: small;
+                background: #ffd400;
+            }
+
+            
+            .tabs {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-around;
+                /* border-bottom: 1px solid #00000061; */
+                z-index: 2;
+                box-shadow: 0 0 4px rgb(0 0 0 / 40%);
+            }
+
+            .tab {
+                font-size: 1.2em;
+                padding: 10px;
+                flex: 1;
+                text-align: center;
+                cursor: pointer;
+                border-bottom: 3px solid white;
+                transition: all 300ms ease;
+            }
+
+            .tab:hover {
+                background-color: var(--accent-color-dim);
+                border-bottom: 3px solid var(--accent-color);
+            }
+
+            .tab[active] {
+                font-weight: bold;
+                border-bottom: 3px solid var(--accent-color);
+            }
+
+            header {
+                padding-left: 8px;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            header .title {
+                max-lines: 1;
+                text-overflow: ellipsis;
+                font-weight: bold;
+                font-size: 1.3em;
+                flex: 1;
+                align-items: center;
+                justify-content: flex-start;
+                -webkit-app-region: drag;
+                user-select: none;
+            }
+
+            header .buttons {
+                display: flex;
+                flex-direction: row;
+                -webkit-app-region: no-drag;
+                align-items: center;
+                justify-content: flex-end;
+            }
+
+            #closeButton {
+                background: rgba(255, 255, 255, 0);
+                transition: all 300ms ease;
+                width: 48px;
+                height: 32px;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #closeButton:hover {
+                background-color: rgba(198, 63, 51, 0.671);
+            }
+
+            #closeButton:active {
+                background-color: rgba(247, 70, 54, 0.999);
+            }
+
+            h1 {
+                margin: 0;
+            }
+
+            main {
+                flex: 1;
+                background-color: white;
+                -webkit-app-region: no-drag;
+                z-index: 1;
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                width: 100vw;
+                height: 100vh;
+            }
+
+
+            footer {
+                background-color: #b6b6b6;
+                padding: 16px;
+                z-index: 1;
+            }
+
+            .section {
+                display: flex;
+                flex-direction: column;
+                opacity: 1;
+                flex: 1;
+                overflow: hidden;
+            }
+
+            .divider {
+                height: 1px;
+                width: -webkit-fill-available;
+                background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.6), transparent);
+                align-self: center;
+            }
+
+            .hidden {
+                transform: translateX(100%) !important;
                 opacity: 0;
+            }
+
+            /* #closeButton::part(base) {
+                color: grey;
+            }
+
+            #closeButton::part(base):hover {
+                color: red;
+            }
+
+            #closeButton::part(base):focus {
+                color: blue;
+            } */
+
+            .hide {
+                display: none;
+            }
+
+            sl-dialog::part(body) {
+                padding: 0 16px;
+            }
+
+            sl-dialog::part(title) {
+                font-size: 1.2em;
+                font-weight: bold;
+                padding: 16px;
             }
         `
     ];
 
     @state()
-    private isDragVisible: boolean = false;
+    private isUpdateAvailable: boolean = false;
+
+    @state()
+    private currentTab: 'import' | 'settings' = 'settings';
+
+    @state()
+    private requests: FileRenameRequest[] = [];
+
+    /** An interval to refresh the requests lists */
+    private _refreshInterval;
 
     override render() {
         return html`
-            <main
-                @dragover="${(e: DragEvent) => {
-                    (window as any).log.debug('file is over drop space');
-                    this.isDragVisible = true;
-                }}"
-                @dragleave="${(e: DragEvent) => {
-                    (window as any).log.debug('file left drag space');
-                    this.isDragVisible = false;
-                }}"
-                @drop="${(e: DragEvent) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-            
-                    this.isDragVisible = false;
-                    this._handleFileDrop(e.dataTransfer.files);
-                }}"
-            >
-                <div id="dropTarget" class="${this.isDragVisible ? '' : 'hid'}">
-                    <sl-icon class="download" name="download"></sl-icon>
-                    <div>Drop files here to rename</div>
-                </div>
-                <div id="update" class="hide">
+            <main>
+                <div id="update" ?hidden="${!this.isUpdateAvailable}">
                     An update is available!
                     <sl-button variant="text" id="updateButton" @click="${e => (window as any).ipcRenderer.send('do-update')}">Install</sl-button>
                 </div>
-                <div class="tabs">
-                    <div class="tab active" data-name="import">Rename</div>
-                    <div class="tab" data-name="settings">Settings</div>
-                    <div class="tab" data-name="logs">Logs</div>
+                <div class="tabs" @click="${this._onTabClicked}">
+                    <div class="tab" ?active="${this.currentTab == 'import'}" data-name="import">Rename</div>
+                    <div class="tab" ?active="${this.currentTab == 'settings'}" data-name="settings">Settings</div>
                 </div>
 
-                <div class="section" data-name="import">
-                    <import-list id="list"></import-list>
+                <div class="section" data-name="import" ?hidden="${this.currentTab != 'import'}">
+                    <div id="dropTarget" class="fade"
+                        @dragover="${this._onDragOver}"
+                        @dragenter="${this._onDragOver}"
+                        @dragleave="${this._onDragExit}"
+                        @dragend="${this._onDragExit}"
+                        @drop="${this._onDrop}"
+                    >
+                        <sl-icon class="download" name="download"></sl-icon>
+                        <div>Drop files here to rename</div>
+                    </div>
+                    <div class="divider"></div>
+                    <request-list id="list" .requests="${this.requests}"></request-list>
                 </div>
 
-                <div class="section hide" data-name="settings">
+                <div class="section" data-name="settings" ?hidden="${this.currentTab != 'settings'}">
                     <app-settings></app-settings>
                 </div>
-
-                <div class="section hide" data-name="logs">
-                    <log-viewer id="logger"></div>
-                </div>
-            
             </main>
 
             <sl-dialog id="dialog" label="Details" class="dialog-overview">
@@ -73,11 +248,51 @@ export class MainApp extends LitElement {
         `;
     }
 
+    private _onDragOver(e: DragEvent) {
+        console.log(`Drag over, type: ${e.type}`)
+        let dropTarget = this.shadowRoot.getElementById('dropTarget');
+        dropTarget.classList.add('active');
+        e.preventDefault();
+    }
+
+    private _onDragExit(e: DragEvent) {
+        console.log('drag leave')
+        let dropTarget = this.shadowRoot.getElementById('dropTarget');
+        dropTarget.classList.remove('active');
+    }
+
+    private _onDrop(e: DragEvent) {
+        console.log('drag drop')
+        let dropTarget = this.shadowRoot.getElementById('dropTarget');
+        dropTarget.classList.remove('active');
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        this._handleFileDrop(e.dataTransfer.files);
+    }
+
     protected override firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
         this._init();
+        let dropTarget = this.shadowRoot.getElementById('dropTarget');
+        dropTarget.addEventListener('drop', (e: DragEvent) => {
+            e.preventDefault();
+            console.log('drop detected')
+        });
+
+
+        // this._refreshInterval = setInterval(async () => {
+        //     this.requests = await files.getRequests();
+        // }, 1000)
+    }
+
+    override disconnectedCallback() {
+        super.disconnectedCallback();
+        clearInterval(this._refreshInterval);
     }
 
     private _init() {
+        this._initIpcListeners();
         this._initTabs();
     }
 
@@ -85,90 +300,41 @@ export class MainApp extends LitElement {
         let tab = document.querySelector('.tabs');
         let tabs = document.querySelectorAll('.tab');
         let sections = document.querySelectorAll('.section');
-        tab.addEventListener('click', (e: any) => {
-            console.log(e.target);
-            let sectionName = e.target.dataset['name'];
-    
-            sections.forEach((section: any) => {
-                if (section.dataset['name'] == sectionName) {
-                    section.classList.remove('hide');
-                } else {
-                    section.classList.add('hide');
-                }
-            });
-    
-            tabs.forEach((tab: any) => {
-                if (tab.dataset['name'] == sectionName) {
-                    tab.classList.add('active');
-                } else {
-                    tab.classList.remove('active');
-                }
-            });
-        });
-    
+
+
     }
 
-    _handleFileDrop(files) {
+    private _onTabClicked(e: MouseEvent) {
+
+        console.log(e.target);
+        let sectionName = (e.target as any).dataset['name'];
+        this.currentTab = sectionName;
+    }
+
+    _handleFileDrop(fileList: FileList) {
         let doRename = true;
-        if (files.length > 2) {
-            doRename = confirm("Are you sure you want to rename this many files?")
+        if (fileList.length > 2) {
+            doRename = confirm(`A large number of files were dropped (${fileList.length.toFixed(0)}).\n\nAre you sure you want to rename this many files?`)
         }
-    
+
         if (doRename) {
-            for (var f of files) {
-                let importFile = new window.ImportFile(uuid, f.path, 'pending', 0);
-                let pendingEl = new PendingImport();
-                pendingEl.id = `import-${uuid}`;
-                pendingEl.uuid = uuid;
-                pendingEl.status = importFile.status;
-                pendingEl.label = "Waiting...";
-                let filename = this._extractFilename(importFile.path);
-                pendingEl.name = filename;
-                let path = this._extractPath(importFile.path);
-                pendingEl.path = path;
-                pendingEl.progress = importFile.progress;
-                pendingEl.addEventListener('cancel', (e) => {
-                    (window as any).ipcRenderer.send('cancel-import-file', e.detail);
-                });
-    
-                pendingEl.addEventListener('show-details', (e) => {
-                    dialogContent.innerHTML = e.detail;
-                    dialog.show();
-                });
-                
-                let list = document.querySelector('#list');
-                list.addItem(pendingEl);
-                (window as any).log.debug(`dropped file ${f.path}: uuid: ${uuid}`);
-                (window as any).ipcRenderer.send('add-import-file', importFile);
-    
+            for (var i = 0; i < fileList.length; i++) {
+                let f = fileList[i]
+                files.addFileRequest(f.path);
             }
         }
     }
 
-    private _extractPath(path) {
-        if (path.substr(0, 12) == "C:\\fakepath\\")
-          return path.substr(0, 11); // modern browser
-        var x;
-        x = path.lastIndexOf('/');
-        if (x >= 0) // Unix-based path
-          return path.substr(0, x);
-        x = path.lastIndexOf('\\');
-        if (x >= 0) // Windows-based path
-          return path.substr(0, x);
-        return ""; // just the filename
-    }
+    private _initIpcListeners() {
+        api.receive('update-available', () => {
+            this.isUpdateAvailable = true;
+        });
 
-    private _extractFilename(path) {
-        if (path.substr(0, 12) == "C:\\fakepath\\")
-          return path.substr(12); // modern browser
-        var x;
-        x = path.lastIndexOf('/');
-        if (x >= 0) // Unix-based path
-          return path.substr(x+1);
-        x = path.lastIndexOf('\\');
-        if (x >= 0) // Windows-based path
-          return path.substr(x+1);
-        return "path"; // just the filename
+        api.receive('requests-changed', async () => {
+            console.log('saw requests changed notification')
+            this.requests = await files.getRequests();
+            this.requestUpdate();
+        })
     }
 }
 

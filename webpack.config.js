@@ -51,7 +51,7 @@ const mainConfig = {
 };
 
 const rendererConfig = {
-    entry: path.join(__dirname, "src", "index.ts"),
+    entry: path.join(__dirname, "src", "window", "index.ts"),
     output: {
         filename: "index.js",
         path: outDir,

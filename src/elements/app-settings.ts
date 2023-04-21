@@ -1,7 +1,12 @@
-import { LitElement, html, css, PropertyValueMap } from 'lit';
-import { customElement, property } from 'lit/decorators.js'
-import { Settings, Log, Dialog } from './context-bridge-interface';
+import { LitElement, PropertyValueMap, css, html } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { FileRule } from '../file/file-rule';
+import { Dialog, Log, Settings } from './context-bridge-interface';
 declare const settings: Settings, log: Log, dialog: Dialog;
+
+import './file-rule-editor';
+import './file-rule-view';
+import './settings/checkbox-input-settings';
 
 @customElement('app-settings')
 export class AppSettings extends LitElement {
@@ -9,9 +14,9 @@ export class AppSettings extends LitElement {
         css`
             :host {
                position: relative;
-               padding: 16px;
                display: flex;
                flex-direction: column;
+               overflow: hidden;
             }
            
 
@@ -23,43 +28,23 @@ export class AppSettings extends LitElement {
                 display: none !important;
             }
 
-            .db-info {
+            .list {
+                height: 100%;
+                overflow: auto;
                 display: flex;
-                flex-direction: row;
-                align-items: center;
-                overflow: hidden;
-                border: 1px solid #ffffff6e;
-                border-radius: 5px;
-                margin: 8px;
-                padding: 8px 24px 8px 8px;
-                font-size: 9pt;
-                position: relative;
-                box-shadow: 0 0 5px rgb(0 0 0 / 40%);
+                flex-direction: column;
+                padding: 0.25em;
+                gap: 0.25em;
             }
 
-            .db-info sl-icon-button {
-                position: absolute;
-                top: 0;
-                right: 0;
-                --sl-focus-ring: none;
+            .option {
+                padding: 1rem 1rem 0 1rem;
             }
 
-            .db-info sl-icon-button.active {
-                animation: spin 1s linear infinite;
-                pointer-events: none;
-            }
-
-            .db-info .overlay {
-                position: absolute;
-                top: 0;
-                right: 0;
-                left: 0;
-                bottom: 0;
-                background-color: rgb(255 255 255 / 84%);
-            }
-
-            .db-info span {
-                font-weight: bold;
+            .title {
+                font-size: var(--sl-font-size-medium);
+                font-weight: var(--sl-font-weight-bold);
+                margin-bottom: 1em;
             }
 
             sl-button, sl-checkbox, sl-input {
@@ -82,66 +67,79 @@ export class AppSettings extends LitElement {
         `
     ];
 
+    @state()
+    private defaultRule: FileRule;
+
+    @state()
+    private rules: FileRule[] = []
+
     override render() {
+        let ruleListTemplates = this._getRuleListTemplates();
+
         return html`
-            <sl-checkbox id="autostartCheckbox">Automatically start at login</sl-checkbox>
+            <checkbox-input-setting
+                key="options.autostart"
+                title="Automatically start at login"
+                ></checkbox-input-setting>
+
+            <checkbox-input-setting
+                key="options.overwrite"
+                title="Overwrite existing files"
+                enabledsubtitle="Existing files will be overwritten without warning"
+                disabledsubtitle="Will be prompted before overwrite existing files"
+                ></checkbox-input-setting>
+
+            <div class="option">
+                <div class="title">Fallback Rule</div>
+                <file-rule-view
+                    .rule=${this.defaultRule}
+                    @edit="${(e: CustomEvent) => { this._editRule(e.detail, true) }}"
+                ></file-rule-view>
+            </div>
             
-            <sl-button id="selectDbButton">
-                <sl-icon name="table"></sl-icon>
-                Select Database File
-            </sl-button>
-
-            <sl-input id="backupInput" label="Backup Location"  placeholder="Select a folder"></sl-input>
-
-            <input id="databaseInput" class="hide" type="file" />
-            <input id="backupFileInput" webkitdirectory directory class="hide" type="file" />
+            <div class="option">
+                <div class="title">Specialty Rules</div>
+            </div>
+            <div class="list">
+                ${ruleListTemplates}
+            </div>
         `;
     }
 
-    protected override firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-        this._initSettings();
+    private _getRuleListTemplates() {
+        let templates = [];
 
-        let autostartCheckbox = this.shadowRoot.getElementById('autostartCheckbox');
-        let isAutostart = settings.get('app.autostart');
-        if (isAutostart == null) isAutostart = true;
-        if (isAutostart) autostartCheckbox.checked = true;
+        this.rules = [this.defaultRule, this.defaultRule, this.defaultRule, this.defaultRule, this.defaultRule, this.defaultRule, this.defaultRule, this.defaultRule]
 
-        autostartCheckbox.addEventListener('change', () => {
-            let isChecked = autostartCheckbox.checked;
-            settings.set('app.autostart', isChecked);
-            window.ipcRenderer.send('change-autostart', isChecked);
+        this.rules?.forEach(r => {
+            let t = this._getRuleTemplate(r);
+            templates.push(t);
         })
 
-        let dbFileInput = this.shadowRoot.getElementById('databaseInput');
-        dbFileInput.addEventListener('change', (e) => {
-            // console.log('new file selected');
-            let file = dbFileInput.files[0].path;
-            settings.set('app.db-file', file);
-            this._refreshDBInfo();
-        })
-
-        let dbButton = this.shadowRoot.getElementById('selectDbButton');
-        dbButton.addEventListener('click', () => {
-            //trigger the hidden file input click
-            dbFileInput.click();
-        });
-
-        let backupInput = this.shadowRoot.getElementById('backupInput');
-        let backupPath = settings.get('app.backup-path');
-        if (backupPath != null) backupInput.value = backupPath;
-
-        backupInput.addEventListener('click', (e) => {
-            //pass all clicks to the hidden file input
-            let results = dialog.selectFolder();
-            
-            if (results == undefined) {
-                backupInput.value = '';
-            } else {
-                let backupPath = results[0];
-                backupInput.value = backupPath;
-                settings.set('app.backup-path', backupPath);
-            }
-            console.log(results);
-        })
+        return templates;
     }
+
+    private _getRuleTemplate(rule: FileRule) {
+        return html`
+            <file-rule-view
+                .rule=${rule}
+                @edit="${(e: CustomEvent) => { this._editRule(e.detail, false) }}"
+            ></file-rule-view>
+        `
+    }
+
+    private _editRule(rule: FileRule, isDefault: boolean) {
+
+    }
+
+    protected override firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+        this._updateRules();
+    }
+
+    private _updateRules() {
+        this.defaultRule = settings.get('rules.defaultRule');
+        this.rules = settings.get('rules.rules');
+    }
+
+
 }

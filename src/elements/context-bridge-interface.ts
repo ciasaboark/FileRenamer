@@ -1,6 +1,8 @@
-export interface File {
-    rename(oldPath: string, newPath: string): Promise<void>;
-    copy(oldPath: string, newPath: string): Promise<void>;
+import { FileRenameRequest } from "../file/rename-request";
+
+export interface Files {
+    addFileRequest(filename: string);
+    getRequests(): Promise<FileRenameRequest[]>;
 }
 
 export interface Log {
@@ -29,4 +31,8 @@ export interface Dialog {
         message: string,
         type: 'none' | 'info' | 'error' | 'question' | 'warning'
     ): boolean
+}
+
+export interface API {
+    receive(channel: string, func: Function): void;
 }

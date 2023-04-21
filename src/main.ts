@@ -1,13 +1,12 @@
 // Modules to control application life and create native browser window
-import { app, BrowserWindow, Tray, Menu, ipcMain } from 'electron';
-
+import { BrowserWindow, Menu, Tray, app, ipcMain } from 'electron';
+import { DEFAULT_SETTINGS } from './settings/default-settings';
+import settings = require('electron-settings');
+const _ = require('lodash');
 const path = require('path')
-let fs = require('fs');
-const settings = require('electron-settings');
-const { create } = require('electron-log');
 const localshortcut = require('electron-localshortcut');
 const log = require('electron-log');
-log.transports.file.level = 'info'
+log.transports.file.level = 'info';
 const { autoUpdater } = require("electron-updater");
 autoUpdater.logger = log;
 
@@ -22,9 +21,9 @@ if (!lock) {
 }
 
 //enable the autostart feature if selected
-let isAutostart = settings.getSync('app.autostart');
+let isAutostart = Boolean(settings.getSync('app.autostart'));
 if (isAutostart == null) isAutostart = true;  //default to enabled
-app.setLoginItemSettings({openAtLogin: isAutostart});
+app.setLoginItemSettings({ openAtLogin: isAutostart });
 
 
 //check for any updates
@@ -34,8 +33,22 @@ autoUpdater.addAuthHeader('update-downloaded', () => {
   }
 });
 
+//merge the default settings
+let curSettings = settings.getSync();
+
+let mergedSettings = _.merge({}, DEFAULT_SETTINGS);
+mergedSettings = _.merge(mergedSettings, curSettings);
+settings.setSync(mergedSettings);
+
+
 import * as settingsApi from './api/settings-api';
 settingsApi.init();
+
+import * as fileApi from './api/file-api';
+fileApi.init();
+
+import * as dialogApi from './api/dialog-api';
+dialogApi.init();
 
 
 function _showMainWindow() {
@@ -60,7 +73,7 @@ function _showMainWindow() {
 
 
 let mainWindow;
-function createMainWindow () {
+function createMainWindow() {
   if (mainWindow != null) {
     _showMainWindow();
     return;
@@ -70,13 +83,13 @@ function createMainWindow () {
   let isPinned = Boolean(settings.getSync('mainwindow.pinned'));
 
   //restore our previous window size
-  let height = parseInt(settings.getSync('mainwindow.height'));
-  if (isNaN(height)) {
+  let height = parseInt(settings.getSync('mainwindow.height') as string);
+  if (height == null || isNaN(height)) {
     height = 800;
   }
 
-  let width = parseInt(settings.getSync('mainwindow.width'));
-  if (isNaN(width)) {
+  let width = parseInt(settings.getSync('mainwindow.width') as string);
+  if (width == null || isNaN(width)) {
     width = 400;
   }
 
@@ -86,28 +99,31 @@ function createMainWindow () {
     height: height,
     minHeight: 500,
     minWidth: 300,
-    frame: false,
     backgroundColor: 'white',
     show: false,
-    icon: __dirname + './assets/pallet.png',
-    
+    icon: __dirname + '../assets/tray_icon.png',
+
 
     webPreferences: {
       nodeIntegration: false,
-      contextIsolation: false,
+      contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
       webSecurity: true,
-      sandbox: true
+      sandbox: false
     }
   });
+
+  //stash the window as a global object
+  global.mainWindow = mainWindow;
+
   mainWindow.removeMenu();
 
   // and load the index.html of the app.
-  mainWindow.loadFile('src/index.html');
+  mainWindow.loadFile('src/window/index.html');
   // mainWindow.webContents.openDevTools({
   //   mode: 'detach'
   // });
-  
+
 
   mainWindow.on('ready-to-show', () => {
     _showMainWindow();
@@ -142,24 +158,27 @@ function createMainWindow () {
 }
 
 function createTrayIcon() {
-  let iconPath = path.join(__dirname, './src/assets/pallet.png');
+  let iconPath = path.join(__dirname, '../src/assets/tray_icon.png');
   let tray = new Tray(iconPath);
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Show', type: 'normal', click: () => {
-      createMainWindow();
-    } },
-    { label: `v ${app.getVersion()}`, type: 'normal', click: () => {
-      //nothing to do here
-    } },
-    { type: 'separator'},
-    { label: 'Quit', type: 'normal', click: () => {
-      log.info('quitting...')
-
-      fileImporter.stopImport();
-
-      app.quit();
-      process.exit();
-    }}
+    {
+      label: 'Show', type: 'normal', click: () => {
+        createMainWindow();
+      }
+    },
+    {
+      label: `v ${app.getVersion()}`, type: 'normal', click: () => {
+        //nothing to do here
+      }
+    },
+    { type: 'separator' },
+    {
+      label: 'Quit', type: 'normal', click: () => {
+        log.info('quitting...')
+        app.quit();
+        process.exit();
+      }
+    }
   ])
   tray.setToolTip('Container Importer')
   tray.setContextMenu(contextMenu);
@@ -181,13 +200,13 @@ function createTrayIcon() {
 app.whenReady().then(() => {
   createTrayIcon();
 
-  
-//for testing, go ahead and create the main window
-// createMainWindow();
 
-  
+  //for testing, go ahead and create the main window
+  // createMainWindow();
 
-app.on('activate', function () {
+
+
+  app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
@@ -196,7 +215,6 @@ app.on('activate', function () {
 
 app.on('window-all-closed', (e) => {
   log.debug('All windows closed');
-
 });
 
 app.on('will-quit', () => {
@@ -207,8 +225,6 @@ app.on('before-quit', (e) => {
   //preventDefault in the window-all-closed listener will prevent the app from quiting
   e.preventDefault();
   log.debug('Shutting down...');
-  fileImporter.stopImport();
-  tail.close();
 })
 
 ipcMain.on('mainwindow-pinned', (e, isPinned) => {
@@ -219,7 +235,7 @@ ipcMain.on('mainwindow-pinned', (e, isPinned) => {
 });
 
 ipcMain.on('change-autostart', (e, isAutostart) => {
-  app.setLoginItemSettings({openAtLogin: isAutostart});
+  app.setLoginItemSettings({ openAtLogin: isAutostart });
 });
 
 
@@ -244,83 +260,6 @@ ipcMain.on('show-settings', () => {
   //show the main settings window
 });
 
-ipcMain.on('notifiy-settings-changed', (e, detail) => {
-  let configurationComplete = Boolean(detail.configurationComplete);
-
-});
-
-
-//initialize the file importer
-const FileImporter = require('./file-importer');
-const fileImporter = new FileImporter();
-fileImporter.addListener('import-start', uuid => {
-  log.debug(`Saw import begin for file ${uuid}`);
-  if (mainWindow) {
-    mainWindow.webContents.send('import-start', uuid);
-  }
-});
-
-fileImporter.addListener('import-complete', uuid => {
-  log.debug(`Saw import complete for file ${uuid}`);
-  if (mainWindow) {
-    mainWindow.webContents.send('import-complete', uuid);
-  }
-});
-
-fileImporter.addListener('import-progress', (uuid, progress) => {
-  log.debug(`Saw import progress for file ${uuid}, ${progress}`);
-  if (mainWindow) {
-    mainWindow.webContents.send('import-progress', uuid, progress);
-  }
-});
-
-fileImporter.addListener('import-removed', uuid => {
-  log.debug(`Saw import removed for file ${uuid}`)
-  if (mainWindow) {
-    mainWindow.webContents.send('import-removed', uuid);
-  }
-});
-
-fileImporter.addListener('import-failed', (uuid, err) => {
-  let errMsg = "Unable to import"
-  let errDetails = err;
-  //try to give the client some useful details of why this import failed
-  if (err.constructor.name = 'Error') {
-    if (err.message) errDetails = err.message;
-    //tack on the specific odbc error if possible
-    if (err.odbcErrors != null && err.odbcErrors.length > 0) {
-      for (var i = 0; i < err.odbcErrors.length; i++) {
-        let odbErr = err.odbcErrors[i];
-        errDetails = `${errDetails}\n\nODBC Error code ${odbErr.code}: ${odbErr.message}`;
-      }
-    }
-    if (err.errorRow) {
-      errDetails = `${errDetails}\n\nRow that generated error: ${err.errorRow}`;
-    }
-    if (err.lastRowImported) {
-      errDetails = `${errDetails}\n\nLast row successfully imported ${err.lastRowImported}`;
-    }
-  }
-  log.debug(`Saw import failed for file ${uuid}`)
-  if (mainWindow) {
-    mainWindow.webContents.send('import-failed', uuid, errMsg, errDetails);
-  }
-});
-
-fileImporter.beginImport();
-
 ipcMain.on('do-update', () => {
   autoUpdater.quitAndInstall();
 });
-
-
-//watch for new lines on the log and notify the main window
-let Tail = require('nodejs-tail');
-let logFile = log.transports.file.getFile().path;
-let tail = new Tail(logFile);
-tail.on('line', line => {
-  if (mainWindow) {
-    mainWindow.webContents.send('log-line', line);
-  }
-});
-tail.watch();

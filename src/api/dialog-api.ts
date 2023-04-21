@@ -1,7 +1,8 @@
+import { ipcMain } from 'electron';
 import log = require('electron-log');
 
 export function init() {
-    global.ipcMain.on('api-dialog--select-single-folder', (event, options) => {
+    ipcMain.on('api-dialog--select-single-folder', (event, options) => {
         const { dialog } = require('electron');
         log.info('showing folder open dialog')
 
@@ -36,7 +37,7 @@ export function init() {
         event.returnValue = folder;
     });
 
-    global.ipcMain.on('api-dialog--show-confirmation', (event, options) => {
+    ipcMain.on('api-dialog--show-confirmation', (event, options) => {
         const { dialog } = require('electron');
         let selected = dialog.showMessageBoxSync(null, options);
         let isPositive = selected === 1;

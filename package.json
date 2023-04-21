@@ -1,7 +1,7 @@
 {
   "name": "file_renamer",
   "productName": "File Renamer",
-  "version": "1.0.7",
+  "version": "2.0.0",
   "description": "Rename files based on the create date time",
   "main": "bundle/main.js",
   "scripts": {
@@ -38,7 +38,6 @@
     "lit": "^2.6.1",
     "mkdirp": "^1.0.4",
     "moment": "^2.29.4",
-    "nodejs-tail": "^1.1.1",
     "uuid": "^9.0.0",
     "xlsx": "^0.18.5"
   }
