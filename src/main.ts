@@ -98,7 +98,7 @@ function createMainWindow() {
     width: width,
     height: height,
     minHeight: 500,
-    minWidth: 300,
+    minWidth: 250,
     backgroundColor: 'white',
     show: false,
     icon: __dirname + '../assets/tray_icon.png',

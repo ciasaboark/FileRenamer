@@ -7,6 +7,7 @@ export const DEFAULT_SETTINGS: SettingsTree = {
     rules: {
         defaultRule: {
             id: 'default-default-default-default-default',
+            name: 'Default Rule',
             description: 'Fallback rule',
             matchType: 'all',
             matchStr: null,

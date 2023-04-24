@@ -1,4 +1,5 @@
-import { UUID, randomUUID } from 'crypto';
+import { UUID } from 'crypto';
+import { FileRule } from './file-rule';
 
 export type FileRenameRequest = {
     /** A random ID */
@@ -19,6 +20,9 @@ export type FileRenameRequest = {
     /** The original file name (sans path).  Will be the attachment name if file was from an email */
     originalFilename: string,
 
+    /** The timestamp the original file was last changed.  If null this value will be read from filesystem */
+    originalFileLastChange?: Date,
+
     /** The path the file will be stored in. Will be missing when the request is first created */
     newPath?: string,
 
@@ -29,5 +33,8 @@ export type FileRenameRequest = {
     error?: string
 
     /** The create date for the file */
-    fileCreateTime?: Date
+    fileCreateTime?: Date,
+
+    /** The rule that was used */
+    rule?: FileRule
 }

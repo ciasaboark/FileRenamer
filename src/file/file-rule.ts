@@ -7,6 +7,9 @@ export interface FileRule {
     /** A unique ID for the rule */
     id: UUID,
 
+    /** The name of the rule */
+    name: string,
+
     /** A description of the rule */
     description: string,
 
@@ -16,19 +19,19 @@ export interface FileRule {
      * Regex: match based on javascript regex test()
     */
     matchType: 'contains' | 'equals' | 'regex' | 'all',
-    
+
     /** The string to match the filename against */
     matchStr: string,
 
     /** Whether to include the file path when matching */
     includePath: boolean,
-    
+
     /** The destination path that matching files should be put in */
     destinationPath: string,
-    
+
     /** Whether matching files should be moved to the destination path, or copied.  Has no effect if the file was an email attachment */
     renameType: 'copy' | 'move'
-    
+
     /** The pattern to use when renaming the file
      * Potential tokens:
      * - {filename}: the original file name (without path or extension)

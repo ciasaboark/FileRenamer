@@ -3,6 +3,7 @@ import { FileRenameRequest } from "../file/rename-request";
 export interface Files {
     addFileRequest(filename: string);
     getRequests(): Promise<FileRenameRequest[]>;
+    clearCompleted();
 }
 
 export interface Log {
@@ -31,6 +32,11 @@ export interface Dialog {
         message: string,
         type: 'none' | 'info' | 'error' | 'question' | 'warning'
     ): boolean
+}
+
+export interface FileBridge {
+    exists(p: string): boolean;
+    revealFile(p: string, filename?: string): void;
 }
 
 export interface API {

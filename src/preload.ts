@@ -1,8 +1,11 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, shell } from "electron";
 import { FileRenameRequest } from "./file/rename-request";
 import { SettingsArbitrator } from "./settings/settings-arbitrator";
 import log = require('electron-log');
 const sa = SettingsArbitrator.getInstance();
+import fs = require('fs');
+const path = require('path');
+
 
 console.log('Preload!')
 
@@ -20,6 +23,9 @@ contextBridge.exposeInMainWorld('files', {
     getRequests(): Promise<FileRenameRequest[]> {
         let requests = ipcRenderer.invoke('api-file--current-status');
         return requests;
+    },
+    clearCompleted(): void {
+        ipcRenderer.invoke('api-file--clear-completed');
     }
 });
 
@@ -85,5 +91,18 @@ contextBridge.exposeInMainWorld('api', {
                 log.error(`Uncaught error in caller return function: ${err}`)
             }
         })
+    }
+});
+
+contextBridge.exposeInMainWorld('filebridge', {
+    exists(p: string): boolean {
+        let fileExists = fs.existsSync(p);
+        return fileExists;
+    },
+    revealFile(p: string, filename?: string): void {
+        if (filename) {
+            p = path.join(p, filename);
+        }
+        shell.showItemInFolder(p)
     }
 });

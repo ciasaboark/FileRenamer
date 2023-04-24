@@ -2,6 +2,7 @@ import "@shoelace-style/shoelace/dist/components/checkbox/checkbox";
 import "@shoelace-style/shoelace/dist/components/switch/switch";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 declare var settings: any;
 
 @customElement('checkbox-input-setting')
@@ -121,7 +122,7 @@ export default class CheckboxInputSetting extends LitElement {
                     ${iconHtml}
                     <div class="title">${this.title}</div>
                 </div>
-                <div ?hidden="${!subtitleStr}" class="subtitle">${subtitleStr}</div>
+                <div ?hidden="${!subtitleStr}" class="subtitle">${unsafeHTML(subtitleStr)}</div>
             </div>
 
             ${inputHtml}

@@ -119,7 +119,7 @@ export class FileRenamerService extends EventEmitter {
         this._notifyChange();
 
         setTimeout(() => {
-            let rules: FileRule[] = settings.getSync('file-rules') as unknown as FileRule[];
+            let rules: FileRule[] = settings.getSync('rules.rules') as unknown as FileRule[];
             if (!Array.isArray(rules)) {
                 rules = [];
             }
@@ -191,21 +191,24 @@ export class FileRenamerService extends EventEmitter {
 
     /** Generate a new filename for the request based off the given rule */
     private async _getRuleFilename(originalPath: string, request: FileRenameRequest, rule: FileRule): Promise<string> {
-        let stats: fs.Stats = await fs.promises.stat(originalPath)
-        let createTimeMs = stats.birthtimeMs;
-        if (createTimeMs == null || createTimeMs == 0) createTimeMs = stats.ctimeMs;
-        if (createTimeMs == null || createTimeMs == 0) createTimeMs = stats.mtimeMs;
-        if (createTimeMs == null || createTimeMs == 0) createTimeMs = stats.atimeMs;
+        //pull the last change time from the filesystem if one has not been provided
+        if (!request.originalFileLastChange) {
+            let stats: fs.Stats = await fs.promises.stat(originalPath)
+            let createTimeMs = stats.ctimeMs;
+            if (createTimeMs == null || createTimeMs == 0) createTimeMs = stats.mtimeMs;
+            if (createTimeMs == null || createTimeMs == 0) createTimeMs = stats.atimeMs;
 
-        if (createTimeMs == null || createTimeMs == 0) throw "Unable to parse create time for file";
+            if (createTimeMs == null || createTimeMs == 0) throw "Unable to parse create time for file";
 
-        let createTime = new Date(createTimeMs);
+            request.originalFileLastChange = new Date(createTimeMs);
 
-        let newFileName = `${request.originalFilename}`;
+        }
+
+        let newFileName = `${rule.renamePattern}`;
         newFileName = newFileName.replaceAll('{filename}', path.parse(request.originalFilename).name);
         newFileName = newFileName.replaceAll('{ext}', path.parse(request.originalFilename).ext);
-        newFileName = newFileName.replaceAll('{create_date}', moment(createTime).format('YYYYMMDD'));
-        newFileName = newFileName.replaceAll('{create_date}', moment(createTime).format('HHmmss'));
+        newFileName = newFileName.replaceAll('{create_date}', moment(request.originalFileLastChange).format('YYYYMMDD'));
+        newFileName = newFileName.replaceAll('{create_time}', moment(request.originalFileLastChange).format('HHmmss'));
 
         return newFileName;
     }
@@ -232,6 +235,11 @@ export class FileRenamerService extends EventEmitter {
                 //do a simple contains() check on the filename
                 if (filename.includes(r.matchStr)) {
                     //found match
+                    matchingRule = r;
+                    break;
+                }
+            } else if (r.matchType == 'equals') {
+                if (filename == r.matchStr) {
                     matchingRule = r;
                     break;
                 }

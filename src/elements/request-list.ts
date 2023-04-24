@@ -1,6 +1,6 @@
 
 import { LitElement, PropertyValueMap, css, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { FileRenameRequest } from '../file/rename-request';
 import './file-rename-view';
 
@@ -79,6 +79,9 @@ export class RequestList extends LitElement {
     @property()
     private requests: FileRenameRequest[] = [];
 
+    @state()
+    private activeRequestId: string = null;
+
     override render() {
         let listTemplates = this._getListTemplates();
 
@@ -107,12 +110,30 @@ export class RequestList extends LitElement {
         let templates = [];
 
         this.requests?.forEach(r => {
+            if (r.status == 'active') this.activeRequestId = r.id;
             templates.push(html`
-                <file-rename-view .request="${r}"></file-rename-view>
+                <file-rename-view .request="${r}" data-id="${r.id}"></file-rename-view>
             `)
         })
 
         return templates;
+    }
+
+    protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+        this._scrollToActive();
+    }
+
+    private _scrollDebounceTimeout;
+    private _scrollToActive() {
+        clearTimeout(this._scrollDebounceTimeout);
+        this._scrollDebounceTimeout = setTimeout(() => {
+            if (this.activeRequestId == null) return;
+
+            let activeEl = this.shadowRoot.querySelector(`[data-id='${this.activeRequestId}'`) as HTMLElement;
+            if (activeEl) {
+                activeEl.scrollIntoView({ behavior: 'auto', block: 'center' });
+            }
+        }, 100);
     }
 
     private hasClearableRequests(): boolean {

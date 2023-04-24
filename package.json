@@ -1,14 +1,14 @@
 {
   "name": "file_renamer",
   "productName": "File Renamer",
-  "version": "2.0.0",
+  "version": "1.0.2",
   "description": "Rename files based on the create date time",
   "main": "bundle/main.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "electron-builder build  --win --x64 --config electron-builder.json --publish never",
-    "deploy": "electron-builder build --win --x64 --config electron-builder.json --publish always",
+    "build": "electron-builder build  --win --linux --x64 --config electron-builder.json --publish never",
+    "deploy": "electron-builder build --win --linux --x64 --config electron-builder.json --publish always",
     "postinstall": "electron-builder install-app-deps",
     "rebuild": "npm rebuild --runtime=electron --target=7.1.8 --disturl=https://atom.io/download/atom-shell --abi=75"
   },
@@ -36,7 +36,7 @@
     "electron-settings": "^4.0.2",
     "electron-updater": "^4.6.5",
     "lit": "^2.6.1",
-    "mkdirp": "^1.0.4",
+    "mkdirp": "^3.0.0",
     "moment": "^2.29.4",
     "uuid": "^9.0.0",
     "xlsx": "^0.18.5"

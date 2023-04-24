@@ -16,6 +16,7 @@ export class FileRuleView extends LitElement {
                 border: 1px solid rgba(0, 0, 0, 0.2);
                 border-radius: .2em;
                 padding: 1em;
+                background-color: white;
             }
 
             .info {
@@ -49,6 +50,15 @@ export class FileRuleView extends LitElement {
                 margin-top: 1em;
             }
 
+            .title {
+                font-size: 1.1em;
+                font-weight: bold;
+            }
+
+            .description {
+                opacity: 0.85;
+            }
+
         `
     ];
 
@@ -56,15 +66,19 @@ export class FileRuleView extends LitElement {
         return html`
             <div class="row">
                 <div class="info">
-                    
-                    <div class="field">${this.rule?.description}</div>
+                    <div class="title">${this.rule?.name}</div>
+                    <div class="description">${this.rule?.description}</div>
                     <div style="flex: 1"></div>
                     <div class="id field">${this.rule?.id}</div>
                 </div>
                 <sl-icon-button name="gear" label="Settings" @click="${(e) => {
-                this.dispatchEvent(new CustomEvent('open-settings', { detail: this.rule?.id }))
+                this.dispatchEvent(new CustomEvent('edit', { detail: this.rule }))
             }}"></sl-icon-button>
             </div>
         `;
+    }
+
+    private _notifyChange() {
+        this.dispatchEvent(new CustomEvent('change'));
     }
 }

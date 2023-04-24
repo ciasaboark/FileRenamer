@@ -65,7 +65,7 @@ export class MainApp extends LitElement {
                 flex: 1;
                 text-align: center;
                 cursor: pointer;
-                border-bottom: 3px solid white;
+                border-bottom: 3px solid #c6c6c6;
                 transition: all 300ms ease;
             }
 
@@ -132,7 +132,6 @@ export class MainApp extends LitElement {
 
             main {
                 flex: 1;
-                background-color: white;
                 -webkit-app-region: no-drag;
                 z-index: 1;
                 position: relative;
@@ -195,6 +194,20 @@ export class MainApp extends LitElement {
                 font-weight: bold;
                 padding: 16px;
             }
+
+            .bottom-bar {
+                padding: 0.5em 1em;
+                background: rgba(0, 0, 0, 0.1);
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: flex-end;
+                transition: all 300ms ease;
+            }
+
+            .bottom-bar.shift {
+                transform: translateY(100%)
+            }
         `
     ];
 
@@ -202,7 +215,7 @@ export class MainApp extends LitElement {
     private isUpdateAvailable: boolean = false;
 
     @state()
-    private currentTab: 'import' | 'settings' = 'settings';
+    private currentTab: 'import' | 'settings' = 'import';
 
     @state()
     private requests: FileRenameRequest[] = [];
@@ -224,6 +237,7 @@ export class MainApp extends LitElement {
 
                 <div class="section" data-name="import" ?hidden="${this.currentTab != 'import'}">
                     <div id="dropTarget" class="fade"
+                        @dragstart="${this._onDragStart}"
                         @dragover="${this._onDragOver}"
                         @dragenter="${this._onDragOver}"
                         @dragleave="${this._onDragExit}"
@@ -235,6 +249,12 @@ export class MainApp extends LitElement {
                     </div>
                     <div class="divider"></div>
                     <request-list id="list" .requests="${this.requests}"></request-list>
+                    <div class="bottom-bar ${this.requests == null || this.requests.length == 0 ? 'shift' : ''}">
+                        <sl-button @click="${e => files.clearCompleted()}">
+                            <sl-icon slot="prefix" name="stars"></sl-icon>
+                            Clear Completed
+                    </sl-button>
+                    </div>
                 </div>
 
                 <div class="section" data-name="settings" ?hidden="${this.currentTab != 'settings'}">
@@ -246,6 +266,12 @@ export class MainApp extends LitElement {
             <p style="white-space: pre-wrap;" class="content"></p>
             </sl-dialog>
         `;
+
+
+    }
+
+    private _onDragStart(e: DragEvent) {
+        e.dataTransfer.effectAllowed = 'all';
     }
 
     private _onDragOver(e: DragEvent) {
@@ -253,6 +279,7 @@ export class MainApp extends LitElement {
         let dropTarget = this.shadowRoot.getElementById('dropTarget');
         dropTarget.classList.add('active');
         e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
     }
 
     private _onDragExit(e: DragEvent) {
@@ -268,12 +295,19 @@ export class MainApp extends LitElement {
 
         e.preventDefault();
         e.stopPropagation();
+        const attachment = e.dataTransfer.getData('attachment');
+        const file = e.dataTransfer.getData('file');
+        const emailData = e.dataTransfer.getData('text');
+        console.log('attachment', attachment);
+        console.log('file', file);
+        console.log('emailData', emailData);
 
         this._handleFileDrop(e.dataTransfer.files);
     }
 
     protected override firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
         this._init();
+        this._updateRequests();
         let dropTarget = this.shadowRoot.getElementById('dropTarget');
         dropTarget.addEventListener('drop', (e: DragEvent) => {
             e.preventDefault();
@@ -332,9 +366,13 @@ export class MainApp extends LitElement {
 
         api.receive('requests-changed', async () => {
             console.log('saw requests changed notification')
-            this.requests = await files.getRequests();
-            this.requestUpdate();
+            this._updateRequests();
         })
+    }
+
+    private async _updateRequests() {
+        this.requests = await files.getRequests();
+        this.requestUpdate();
     }
 }
 

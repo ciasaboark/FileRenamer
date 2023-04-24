@@ -30,6 +30,7 @@
     --accent-color: #89c3ff;
     --accent-color-dim: #abc6e3;
     --scrollbar-color: #ff267e;
+    --app-background: #fafafa;
     --test: #89c3ff;
     padding: 2px;
     user-select: none;
@@ -53,6 +54,7 @@ body {
     position: relative;
     margin: 0;
     overflow: hidden;
+    background: var(--app-background);
 }
 
 .pinned::part(base) {
